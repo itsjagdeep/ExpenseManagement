@@ -1,0 +1,41 @@
+The only solution I found for this issue is to use GitHub Actions to build your app. Here's how you can set it up:
+
+How to Create a .yml File for GitHub Actions:
+In your GitHub repository, navigate to the Actions tab.
+Click on the "New workflow" button.
+You can either choose a template or set up a workflow yourself. To set up a custom workflow, click on the "Set up a workflow yourself" option.
+This will open an editor where you can define your workflow. You can name the file something like build.yml.
+Copy and paste the following YAML configuration into the editor:
+name: EAS Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    name: Install and build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: npm
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+      - name: Install dependencies
+        run: npm install
+      - name: Install expo CLI
+        run: npm install -g expo-cli
+      - name: Publish on expo server
+        run: eas build --profile preview --platform ios
+      - name: Update on Expo
+        run: eas update --auto
